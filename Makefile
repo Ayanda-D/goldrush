@@ -1,37 +1,22 @@
-# See LICENSE for licensing information.
+IGNORE_DEPS += edown eper eunit_formatters meck node_package rebar_lock_deps_plugin rebar_vsn_plugin reltool_util
+C_SRC_DIR = /path/do/not/exist
+C_SRC_TYPE = rebar
+DRV_CFLAGS = -fPIC
+export DRV_CFLAGS
+ERLANG_ARCH = 64
+export ERLANG_ARCH
+ERLC_OPTS = +debug_info
+export ERLC_OPTS
+ERLC_OPTS += -Derlang18=1
 
-DIALYZER = dialyzer
-REBAR = rebar
-APPNAME = goldrush
 
-all: app
 
-app: deps
-	@$(REBAR) compile
+rebar_dep: preprocess pre-deps deps pre-app app
 
-deps:
-	@$(REBAR) get-deps
+preprocess::
 
-clean:
-	@$(REBAR) clean
-	rm -f test/*.beam
-	rm -f erl_crash.dump
+pre-deps::
 
-tests: clean app eunit ct
+pre-app::
 
-eunit:
-	@$(REBAR) -C rebar.test.config eunit skip_deps=true
-
-ct:
-	@$(REBAR) -C rebar.test.config ct skip_deps=true
-
-build-plt:
-	@$(DIALYZER) --build_plt --output_plt .$(APPNAME)_dialyzer.plt \
-		--apps kernel stdlib sasl inets crypto public_key ssl compiler syntax_tools
-
-dialyze:
-	@$(DIALYZER) --src src --plt .$(APPNAME)_dialyzer.plt --no_native \
-		-Werror_handling -Wrace_conditions -Wunmatched_returns # -Wunderspecs
-
-docs:
-	@$(REBAR) doc skip_deps=true
+include $(if $(ERLANG_MK_FILENAME),$(ERLANG_MK_FILENAME),erlang.mk)
